@@ -170,19 +170,27 @@ function makeDriver(state, input) {
 }
 
 const SCENES = {
-  // Cover: the thief holds position in front of the vault door, inside the
-  // camera cone, while the alarm meter climbs.
+  // The title screen, held still for its portrait.
+  title: {
+    level: 0,
+    waypoints: [],
+    stayOnTitle: true,
+    done: (state) => state.screen === 'title' && state.time > 1.5,
+  },
+  // Cover: the thief holds position south-east of the vault door, deep
+  // inside the camera cone, while the alarm meter climbs.
   heist: {
     level: 0,
-    waypoints: [[15, 12]],
+    waypoints: [[17, 13]],
     done: (state) => state.alarm >= 25,
   },
-  // A guard walks into the thief on its patrol line; wait for the chase.
+  // A guard walks into the thief on its patrol line; catch the chase the
+  // instant it starts, before the guard closes the last step.
   alarm: {
     level: 0,
     waypoints: [[15, 15]],
     done: (state) => state.guards.some((g) => g.state === 'chase'),
-    settleFrames: 30,
+    settleFrames: 10,
   },
   // The full job on floor 3: office door, keycard, vault door, crown.
   vault: {
@@ -241,6 +249,14 @@ export function installShots(state, input) {
 
   state.hooks.onFrame = (s) => {
     if (window.__shotDone) return;
+    // A scene that portraits the title screen never leaves it.
+    if (scene.stayOnTitle) {
+      if (scene.done(s)) {
+        window.__shotDone = true;
+        window.__shotInfo = { shot: shotName, alarm: Math.round(s.alarm), score: s.score };
+      }
+      return;
+    }
     if (s.screen === 'title' && stager.step === 'begin') {
       input.queue('confirm');
       stager.step = 'title-confirm';
