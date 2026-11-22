@@ -86,7 +86,9 @@ export function updatePlayer(state, input, dt) {
   }
 
   // Picking a lock: hold E beside a locked door. It is loud work.
-  const door = nearestDoor(state.level, player.x, player.y, 40);
+  // The reach is 48px so a thief standing against the door (centre 27px
+  // away, 42px when they stop just inside the next tile) can always work it.
+  const door = nearestDoor(state.level, player.x, player.y, 48);
   player.lockpickTarget = null;
   if (door && input.interact) {
     if (door.kind === 'keycard') {
