@@ -279,6 +279,14 @@ export function createGame(canvas, input, rng, hooks) {
     const dt = Math.min(0.05, Math.max(0.001, (now - last) / 1000));
     last = now;
     state.frameCount += 1;
+    // A staged screenshot freezes the world the moment it is ready, so
+    // the driver captures the exact frame (a chase, not the caught screen
+    // half a second later). Only the shot stager ever sets this flag.
+    if (window.__shotDone) {
+      render(state);
+      requestAnimationFrame(frame);
+      return;
+    }
     update(dt);
     // Menu screens animate on the same clock (sweeps, sparkles, pulses).
     if (state.screen !== 'play') state.time += dt;
